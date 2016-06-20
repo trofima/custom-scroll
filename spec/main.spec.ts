@@ -83,51 +83,72 @@ class CustomScrollDriver {
     };
 
     when = {
-        instantiated: () => this.customScroll = new CustomScroll(
-            this.nodes.el,
-            // DocumentMock,
-            this.modules.DOMObserver
-        ),
-
-        nodes: (nodes) => {
-            this.node('content', nodes.content);
-            this.node('shifted', nodes.shifted, [this.nodes.content]);
-            this.node('thumb', nodes.thumb);
-            this.node('bar', nodes.bar, [this.nodes.thumb]);
-            this.node('el', nodes.el, [this.nodes.shifted, this.nodes.bar]);
+        instantiated: () => {
+            this.customScroll = new CustomScroll(
+                this.nodes.el,
+                // DocumentMock,
+                this.modules.DOMObserver
+            );
 
             return this;
-        }
+        },
+
+        nodes: (nodes) => {
+            this.when.node('content', nodes.content)
+                .when.node('shifted', nodes.shifted, [this.nodes.content])
+                .when.node('thumb', nodes.thumb)
+                .when.node('bar', nodes.bar, [this.nodes.thumb])
+                .when.node('el', nodes.el, [this.nodes.shifted, this.nodes.bar]);
+
+            return this;
+        },
+
+        node: (name, params, children = []) => { // TODO: change existing el settings
+            var node = this.nodes[name] = new ElementMock(params);
+
+            node.children = children;
+            node.classList.add(name);
+
+            return this;
+        },
+
+        domMutated: () => this.nodes.content.executeMutation(),
     };
 
-    private node(name, params, children = []) {
-        var node = this.nodes[name] = new ElementMock(params);
 
-        node.children = children;
-        node.classList.add(name);
-    }
 }
 
 describe(`Class CustomScroll.`, function() {
-    beforeEach(function() {
-        this.driver = new CustomScrollDriver();
-
-        this.driver
-            .when.nodes({
-                el: {offsetHeight: 100},
-                shifted: {scrollHeight: 200},
-                content: {scrollHeight: 200},
-                bar: {},
-                thumb: {offsetHeight: 100},
-            })
-            .when.instantiated();
-    });
-
     describe(`constructor:`, function() {
-        it(`should calculate scroll thumb height`, function() {
-            this.driver.nodes.content.executeMutation();
+        beforeEach(function() {
+            this.driver = new CustomScrollDriver();
 
+            this.driver
+                .when.nodes({
+                    el: {offsetHeight: 100},
+                    shifted: {scrollHeight: 200},
+                    content: {},
+                    bar: {},
+                    thumb: {offsetHeight: 0},
+                })
+                .when.instantiated()
+                .when.domMutated();
+        });
+
+        it(`should calculate scroll thumb height`, function() {
             expect(this.driver.nodes.thumb.offsetHeight).toBe(50);
+        });
+
+        it(`should add visible class to root element`, function() {
+            expect(this.driver.nodes.el.classList.contains('visible')).toBe(true);
+        });
+
+       fit(`should remove visible class from root element`, function() {
+            this.driver
+                .when.node('shifted', {scrollHeight: 100})
+                .when.domMutated();
+
+            expect(this.driver.nodes.el.classList.contains('visible')).toBe(false);
         });
     });
 });

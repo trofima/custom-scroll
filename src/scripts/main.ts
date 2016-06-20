@@ -66,6 +66,7 @@ export class CustomScroll {
     }
 
     private update() {
+        console.log(this.nodes.shifted.scrollHeight, this.nodes.el.offsetHeight);
         if (this.nodes.shifted.scrollHeight > this.nodes.el.offsetHeight) {
             this.show();
         } else {
