@@ -143,7 +143,7 @@ describe(`Class CustomScroll.`, function() {
             expect(this.driver.nodes.el.classList.contains('visible')).toBe(true);
         });
 
-       fit(`should remove visible class from root element`, function() {
+        it(`should remove visible class from root element`, function() {
             this.driver
                 .when.node('shifted', {scrollHeight: 100})
                 .when.domMutated();

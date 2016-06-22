@@ -5,7 +5,6 @@ interface MutationObserverClass {
 }
 
 export class CustomScroll {
-    //TODO: fix infinite scroll
     //TODO: set to body cursor: pointer while draging thumb
     //TODO: on window resize
     //TODO: display scroll handle on scrolling (if window is not focused, animation doesn't show the handle)
@@ -24,9 +23,13 @@ export class CustomScroll {
         listeners: []
     };
 
-    private scroll = {
-        thumbY: 0,
-        callbacks: [],
+    private listeners = {
+        scroll: [],
+        change: [],
+    };
+
+    private thumb = {
+        y: 0,
     };
 
     constructor(
@@ -35,16 +38,13 @@ export class CustomScroll {
         DOMObserver
     ) {
         // this.document.el = documentEl;
-        
-        // console.log(element.offsetHeight, element);
-
         this.setNodes(element);
         this.observeDOMMutation(DOMObserver);
         // this.addEventListeners();
     }
 
-    addScrollListener(callback) {
-        this.scroll.callbacks.push(callback);
+    addListener(type:string, listener:Function) {
+        this.listeners[type].push(listener);
     }
 
     private setNodes(el) {
@@ -61,12 +61,11 @@ export class CustomScroll {
         domObserver.observe(this.nodes.content, {
             childList: true,
             attributes: true,
-            subtree: true
+            subtree: true,
         });
     }
 
     private update() {
-        console.log(this.nodes.shifted.scrollHeight, this.nodes.el.offsetHeight);
         if (this.nodes.shifted.scrollHeight > this.nodes.el.offsetHeight) {
             this.show();
         } else {
@@ -84,13 +83,25 @@ export class CustomScroll {
 
         this.nodes.el.classList.add('visible');
         this.nodes.thumb.style.setProperty('height', thumbHeight);
+        this.invokeListenersFor('change');
+    }
+
+    private invokeListenersFor(type) {
+        let shifted = this.nodes.shifted;
+
+        this.listeners[type].forEach((listener) => listener({
+            offsetHeight: shifted.offsetHeight,
+            scrollHeight: shifted.scrollHeight,
+            scrollTop: shifted.scrollTop,
+        }));
     }
 
     private addEventListeners() {
         this.nodes.shifted.addEventListener('scroll', () => {
             this.moveThumb();
-            this.executeScrollCallbacks();
+            this.invokeListenersFor('scroll');
         });
+
         this.nodes
             .thumb.addEventListener('mousedown', (e) => this.startThumbDragging(e));
     }
@@ -102,19 +113,9 @@ export class CustomScroll {
         this.nodes.thumb.style.setProperty('top', newTop + 'px');
     }
 
-    private executeScrollCallbacks() {
-        let shifted = this.nodes.shifted;
-
-        this.scroll.callbacks.forEach((callback) => callback({
-            offsetHeight: shifted.offsetHeight,
-            scrollHeight: shifted.scrollHeight,
-            scrollTop: shifted.scrollTop,
-        }));
-    }
-
     private startThumbDragging(e) {
         this.nodes.el.classList.add('thumb-drugging');
-        this.scroll.thumbY = e.screenY;
+        this.thumb.y = e.screenY;
         this.addDocumentEventListener('mousemove', (e) => this.dragThumb(e));
         this.addDocumentEventListener('mouseup', (e) => this.finishThumbDragging(e));
         e.preventDefault();
@@ -130,10 +131,10 @@ export class CustomScroll {
     }
 
     private dragThumb(e) {
-        let deltaY = (e.screenY - this.scroll.thumbY)
+        let deltaY = (e.screenY - this.thumb.y)
             * this.nodes.shifted.scrollHeight / this.nodes.bar.offsetHeight;
 
-        this.scroll.thumbY = e.screenY;
+        this.thumb.y = e.screenY;
         this.nodes.shifted.scrollTop += deltaY;
         e.preventDefault();
     }
