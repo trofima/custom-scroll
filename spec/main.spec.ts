@@ -94,24 +94,14 @@ class CustomScrollDriver {
         bar: null,
         thumb: null,
     };
-
-    when = {
-        instantiated: () => {
-            this.customScroll = new CustomScroll(
-                this.nodes.el,
-                // DocumentMock,
-                this.modules.DOMObserver
-            );
-
-            return this;
-        },
-
+    
+    given = {
         nodes: (nodes) => {
-            this.when.node('content', nodes.content)
-                .when.node('shifted', nodes.shifted, [this.nodes.content])
-                .when.node('thumb', nodes.thumb)
-                .when.node('bar', nodes.bar, [this.nodes.thumb])
-                .when.node('el', nodes.el, [this.nodes.shifted, this.nodes.bar]);
+            this.given.node('content', nodes.content)
+                .given.node('shifted', nodes.shifted, [this.nodes.content])
+                .given.node('thumb', nodes.thumb)
+                .given.node('bar', nodes.bar, [this.nodes.thumb])
+                .given.node('el', nodes.el, [this.nodes.shifted, this.nodes.bar]);
 
             return this;
         },
@@ -126,44 +116,114 @@ class CustomScrollDriver {
 
             return this;
         },
+        
+        listener: (type, callback) => {
+            this.customScroll
+                .addListener(type, callback);
 
-        domMutated: () => this.nodes.content.executeMutation(),
+            return this;
+        }
+    };
+
+    when = {
+        instantiated: () => {
+            this.customScroll = new CustomScroll(
+                this.nodes.el,
+                // DocumentMock,
+                this.modules.DOMObserver
+            );
+
+            return this;
+        },
+
+        domMutated: () => {
+            this.nodes.content.executeMutation();
+
+            return this;
+        }
     };
 
 
 }
 
 describe(`Class CustomScroll.`, function() {
+    describe(`static checkEvent:`, function() {
+        it(`should throw type error, if invalid event type passed`, function() {
+            expect(() => CustomScroll.checkEvent('invalid'))
+                .toThrowError(
+                    "\nEvent type 'invalid' is not supported." +
+                    "\nSupported events are: scroll, change." +
+                    "\n"
+                );
+        });
+    });
+
     describe(`constructor:`, function() {
         beforeEach(function() {
             this.driver = new CustomScrollDriver();
 
             this.driver
-                .when.nodes({
+                .given.nodes({
                     el: {offsetHeight: 100},
-                    shifted: {scrollHeight: 200},
+                    shifted: {offsetHeight: 100, scrollHeight: 200, scrollTop: 0},
                     content: {},
                     bar: {},
                     thumb: {offsetHeight: 0},
                 })
-                .when.instantiated()
-                .when.domMutated();
+                .when.instantiated();
         });
 
         it(`should calculate scroll thumb height`, function() {
+            this.driver.when.domMutated();
+
             expect(this.driver.nodes.thumb.offsetHeight).toBe(50);
         });
 
         it(`should add visible class to root element`, function() {
+            this.driver.when.domMutated();
+
             expect(this.driver.nodes.el.classList.contains('visible')).toBe(true);
         });
 
         it(`should remove visible class from root element`, function() {
             this.driver
-                .when.node('shifted', {scrollHeight: 100})
+                .when.domMutated()
+                .given.node('shifted', {scrollHeight: 100})
                 .when.domMutated();
 
             expect(this.driver.nodes.el.classList.contains('visible')).toBe(false);
+        });
+
+        it(`should invoke listeners for 'change' event`, function() {
+            var changeListener = jasmine.createSpy('changeListener');
+            
+            this.driver
+                .given.listener('change', changeListener)
+                .when.domMutated();
+            
+            expect(changeListener).toHaveBeenCalledWith({
+                offsetHeight: 100,
+                scrollHeight: 200,
+                scrollTop: 0,
+            });
+        });
+
+        it(`should move thumb on scroll`, function() {
+
+        });
+
+        it(`should invoke listeners for 'scroll' event`, function() {
+
+        });
+
+        it(`should scroll when 'thumb' is dragging`, function() {
+
+        });
+    });
+
+    describe(`addListener`, function() {
+        it(`should register listener to event type`, function() {
+
         });
     });
 });
