@@ -11,7 +11,13 @@ class ElementMock {
     constructor(props) {
         // super();
 
+        this.set(props);
+    }
+
+    set(props) {
         Object.keys(props).forEach((key) => this[key] = props[key]);
+
+        return this;
     }
 
     querySelector(selector) {
@@ -35,6 +41,13 @@ class ElementMock {
         add: (className) => {
             if (this.classes.indexOf(className) === -1)
                 this.classes.push(className);
+        },
+
+        remove: (className) => {
+            var index = this.classes.indexOf(className);
+
+            if (index > -1)
+                this.classes.splice(index, 1);
         },
 
         contains: (className) => this.classes.indexOf(className) > -1,
@@ -103,8 +116,10 @@ class CustomScrollDriver {
             return this;
         },
 
-        node: (name, params, children = []) => { // TODO: change existing el settings
-            var node = this.nodes[name] = new ElementMock(params);
+        node: (name, props, children = []) => {
+            var node = this.nodes[name] = this.nodes[name]
+                ? this.nodes[name].set(props)
+                : new ElementMock(props);
 
             node.children = children;
             node.classList.add(name);

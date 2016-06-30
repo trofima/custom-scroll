@@ -10,6 +10,49 @@ export class CustomScroll {
     //TODO: display scroll handle on scrolling (if window is not focused, animation doesn't show the handle)
     //TODO: on bar click scroll ?
 
+    static supportedEventTypes = ['scroll', 'change'];
+
+    static checkEvent(type) {
+        function removeSpaces(strings, ...values) {
+            var output = '';
+
+            for (let i = 0; i < values.length; i++) {
+                output += strings[i] + values[i];
+            }
+
+            output += strings[values.length];
+
+            return output
+                .split(/(?:\r\n|\n|\r)/)
+                .map((line) => line.replace(/^\s+/gm, ''))
+                .join('\n');
+        }
+
+        if (this.supportedEventTypes.indexOf(type) === -1) {
+            throw new TypeError(removeSpaces`
+							Event type '${type}' is not supported.
+							Supported events are: ${this.supportedEventTypes.join(', ')}.
+						`);
+        }
+    }
+
+    constructor(
+        element:HTMLElement,
+        // documentEl:Document,
+        DOMObserver//:MutationObserverClass
+    ) {
+        CustomScroll.supportedEventTypes.forEach((type) => this.listeners[type] = []);
+        // this.document.el = documentEl;
+        this.setNodes(element);
+        this.observeDOMMutation(DOMObserver);
+        // this.addEventListeners();
+    }
+
+    addListener(type:string, listener:Function) {
+        CustomScroll.checkEvent(type);
+        this.listeners[type].push(listener);
+    }
+
     private nodes = {
         el: null,
         shifted: null,
@@ -23,29 +66,11 @@ export class CustomScroll {
         listeners: []
     };
 
-    private listeners = {
-        scroll: [],
-        change: [],
-    };
+    private listeners = {};
 
     private thumb = {
         y: 0,
     };
-
-    constructor(
-        element:HTMLElement,
-        // documentEl:Document,
-        DOMObserver
-    ) {
-        // this.document.el = documentEl;
-        this.setNodes(element);
-        this.observeDOMMutation(DOMObserver);
-        // this.addEventListeners();
-    }
-
-    addListener(type:string, listener:Function) {
-        this.listeners[type].push(listener);
-    }
 
     private setNodes(el) {
         this.nodes.el = el;
@@ -86,16 +111,6 @@ export class CustomScroll {
         this.invokeListenersFor('change');
     }
 
-    private invokeListenersFor(type) {
-        let shifted = this.nodes.shifted;
-
-        this.listeners[type].forEach((listener) => listener({
-            offsetHeight: shifted.offsetHeight,
-            scrollHeight: shifted.scrollHeight,
-            scrollTop: shifted.scrollTop,
-        }));
-    }
-
     private addEventListeners() {
         this.nodes.shifted.addEventListener('scroll', () => {
             this.moveThumb();
@@ -111,6 +126,16 @@ export class CustomScroll {
             / this.nodes.shifted.scrollHeight;
 
         this.nodes.thumb.style.setProperty('top', newTop + 'px');
+    }
+
+    private invokeListenersFor(type) {
+        let shifted = this.nodes.shifted;
+
+        this.listeners[type].forEach((listener) => listener({
+            offsetHeight: shifted.offsetHeight,
+            scrollHeight: shifted.scrollHeight,
+            scrollTop: shifted.scrollTop,
+        }));
     }
 
     private startThumbDragging(e) {
