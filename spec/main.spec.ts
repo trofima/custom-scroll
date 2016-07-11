@@ -2,40 +2,27 @@
 
 import {CustomScroll} from './../src/scripts/main';
 
-class ElementMock {
+class EventMock {
+    constructor(type) {
+        return {type: type};
+    }
+}
+
+class ElementCoreMock {
     offsetHeight = 0;
     offsetTop = 0;
     scrollHeight = 0;
     children = [];
 
-    constructor(props) {
-        // super();
+    constructor() {}
 
-        this.set(props);
+    addEventListener (name, callback) {
+        this.listeners[name] = callback;
     }
 
-    set(props) {
-        Object.keys(props).forEach((key) => this[key] = props[key]);
-
-        return this;
+    dispatchEvent(e) {
+        this.listeners[e.type]();
     }
-
-    querySelector(selector) {
-        if (selector.charAt(0) === '.')
-            for (let child of this.children) {
-                if (child.classList.contains(selector.substring(1)))
-                    return child;
-            }
-
-        return null;
-    }
-
-    executeMutation(){}
-
-
-    // core imitation
-
-    private classes = [];
 
     classList = {
         add: (className) => {
@@ -58,9 +45,41 @@ class ElementMock {
             if (name === 'height')
                 this.offsetHeight = parseInt(value, 10);
 
+            if (name === 'top')
+                this.offsetTop = parseInt(value, 10);
+
             this.style[name] = value;
         }
     };
+
+    private classes = [];
+    private listeners = {};
+}
+
+class ElementMock extends ElementCoreMock {
+    constructor(props) {
+        super();
+
+        this.set(props);
+    }
+
+    set(props) {
+        Object.keys(props).forEach((key) => this[key] = props[key]);
+
+        return this;
+    }
+
+    querySelector(selector) {
+        if (selector.charAt(0) === '.')
+            for (let child of this.children) {
+                if (child.classList.contains(selector.substring(1)))
+                    return child;
+            }
+
+        return null;
+    }
+
+    executeMutation() {}
 }
 
 class DOMObserverMock {
@@ -140,6 +159,11 @@ class CustomScrollDriver {
             this.nodes.content.executeMutation();
 
             return this;
+        },
+
+        scrolled: (distance = 0) => {
+            this.nodes.shifted.scrollTop += distance;
+            this.nodes.shifted.dispatchEvent(new EventMock('scroll'));
         }
     };
 
@@ -167,7 +191,7 @@ describe(`Class CustomScroll.`, function() {
                     el: {offsetHeight: 100},
                     shifted: {offsetHeight: 100, scrollHeight: 200, scrollTop: 0},
                     content: {},
-                    bar: {},
+                    bar: {offsetHeight: 100},
                     thumb: {offsetHeight: 0},
                 })
                 .when.instantiated();
@@ -194,26 +218,11 @@ describe(`Class CustomScroll.`, function() {
             expect(this.driver.nodes.el.classList.contains('visible')).toBe(false);
         });
 
-        it(`should invoke listeners for 'change' event`, function() {
-            var changeListener = jasmine.createSpy('changeListener');
-            
-            this.driver
-                .given.listener('change', changeListener)
-                .when.domMutated();
-            
-            expect(changeListener).toHaveBeenCalledWith({
-                offsetHeight: 100,
-                scrollHeight: 200,
-                scrollTop: 0,
-            });
-        });
-
         it(`should move thumb on scroll`, function() {
-
-        });
-
-        it(`should invoke listeners for 'scroll' event`, function() {
-
+            this.driver
+                .when.scrolled(100);
+            
+            expect(this.driver.nodes.thumb.offsetTop).toBe(50);
         });
 
         it(`should scroll when 'thumb' is dragging`, function() {
@@ -222,8 +231,52 @@ describe(`Class CustomScroll.`, function() {
     });
 
     describe(`addListener`, function() {
-        it(`should register listener to event type`, function() {
+        beforeEach(function() {
+            this.driver = new CustomScrollDriver();
 
+            this.driver
+                .given.nodes({
+                    el: {offsetHeight: 100},
+                    shifted: {offsetHeight: 100, scrollHeight: 200, scrollTop: 0},
+                    content: {},
+                    bar: {},
+                    thumb: {offsetHeight: 0},
+                })
+                .when.instantiated();
+        });
+
+        it(`should throw TypeError if listener has wrong type`, function() {
+            expect(() => this.driver.customScroll.addListener('wrong', () => {}))
+                .toThrowError(<any>TypeError);
+        });
+
+        it(`should register 'change' listener`, function() {
+            var changeListener = jasmine.createSpy('changeListener');
+
+            this.driver.customScroll.addListener('change', changeListener);
+            
+            this.driver.when.domMutated();
+
+            expect(changeListener).toHaveBeenCalledWith({
+                offsetHeight: 100,
+                scrollHeight: 200,
+                scrollTop: 0,
+            });
+        });
+
+
+        it(`should register 'scroll' listener`, function() {
+            var scrollListener = jasmine.createSpy('scrollListener');
+
+            this.driver.customScroll.addListener('scroll', scrollListener);
+
+            this.driver.when.scrolled();
+
+            expect(scrollListener).toHaveBeenCalledWith({
+                offsetHeight: 100,
+                scrollHeight: 200,
+                scrollTop: 0,
+            });
         });
     });
 });

@@ -45,12 +45,14 @@ export class CustomScroll {
         // this.document.el = documentEl;
         this.setNodes(element);
         this.observeDOMMutation(DOMObserver);
-        // this.addEventListeners();
+        this.addEventListeners();
     }
 
     addListener(type:string, listener:Function) {
         CustomScroll.checkEvent(type);
-        this.listeners[type].push(listener);
+
+        if (this.listeners[type])
+            this.listeners[type].push(listener);
     }
 
     private nodes = {
@@ -117,8 +119,8 @@ export class CustomScroll {
             this.invokeListenersFor('scroll');
         });
 
-        this.nodes
-            .thumb.addEventListener('mousedown', (e) => this.startThumbDragging(e));
+        // this.nodes
+        //     .thumb.addEventListener('mousedown', (e) => this.startThumbDragging(e));
     }
 
     private moveThumb() {
