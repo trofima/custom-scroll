@@ -14,7 +14,7 @@ export class CustomScroll {
 
     static checkEvent(type) {
         function removeSpaces(strings, ...values) {
-            var output = '';
+            let output = '';
 
             for (let i = 0; i < values.length; i++) {
                 output += strings[i] + values[i];
@@ -93,10 +93,21 @@ export class CustomScroll {
     }
 
     private update() {
-        if (this.nodes.shifted.scrollHeight > this.nodes.el.offsetHeight) {
+        this.fixMarginRight();
+        
+        if (this.nodes.shifted.scrollHeight > this.nodes.el.offsetHeight)
             this.show();
-        } else {
+        else
             this.hide();
+    }
+    
+    private fixMarginRight() {
+        let shifted = this.nodes.shifted;
+        let scrollBarWidth = shifted.offsetWidth - shifted.clientWidth;
+
+        if (scrollBarWidth) {
+            shifted.style.setProperty('margin-right', -scrollBarWidth + 'px');
+            this.nodes.content.style.setProperty('margin-right', 0 + 'px');
         }
     }
 

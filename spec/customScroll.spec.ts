@@ -29,6 +29,19 @@ describe(`Class CustomScroll.`, function() {
                 })
                 .when.instantiated();
         });
+        
+        it(`should fix default styling for the case 
+        when native scrollbar has width (non mac os systems)`, function() {
+            this.driver
+                .given.node('shifted', {offsetWidth: 210, clientWidth: 200})
+                .when.domMutated();
+            
+            expect(this.driver.nodes.shifted.style.getPropertyValue('margin-right'))
+                .toBe('-10px');
+
+            expect(this.driver.nodes.content.style.getPropertyValue('margin-right'))
+                .toBe('0px');
+        });
 
         it(`should calculate scroll thumb height`, function() {
             this.driver.when.domMutated();
@@ -96,7 +109,6 @@ describe(`Class CustomScroll.`, function() {
                 scrollTop: 0,
             });
         });
-
 
         it(`should register 'scroll' listener`, function() {
             var scrollListener = jasmine.createSpy('scrollListener');

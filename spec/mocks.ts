@@ -41,6 +41,10 @@ class ElementCoreMock {
                 this.offsetTop = parseInt(value, 10);
 
             this.style[name] = value;
+        },
+        
+        getPropertyValue: (name) => {
+            return this.style[name];
         }
     };
 
