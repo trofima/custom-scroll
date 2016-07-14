@@ -16,9 +16,8 @@ export class CustomScroll {
         function removeSpaces(strings, ...values) {
             let output = '';
 
-            for (let i = 0; i < values.length; i++) {
+            for (let i = 0; i < values.length; i++)
                 output += strings[i] + values[i];
-            }
 
             output += strings[values.length];
 
@@ -28,12 +27,11 @@ export class CustomScroll {
                 .join('\n');
         }
 
-        if (this.supportedEventTypes.indexOf(type) === -1) {
+        if (this.supportedEventTypes.indexOf(type) === -1)
             throw new TypeError(removeSpaces`
 							Event type '${type}' is not supported.
 							Supported events are: ${this.supportedEventTypes.join(', ')}.
 						`);
-        }
     }
 
     constructor(
