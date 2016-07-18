@@ -62,6 +62,7 @@ export class CustomScrollDriver {
         },
 
         domMutated: () => {
+            this.nodes.shifted.scrollHeight = this.nodes.content.offsetHeight;
             this.nodes.content.executeMutation();
 
             return this;

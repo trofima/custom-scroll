@@ -22,8 +22,8 @@ describe(`Class CustomScroll.`, function() {
             this.driver
                 .given.nodes({
                     el: {offsetHeight: 100},
-                    shifted: {offsetHeight: 100, scrollHeight: 200, scrollTop: 0},
-                    content: {},
+                    shifted: {offsetHeight: 100, scrollHeight: 100, scrollTop: 0},
+                    content: {offsetHeight: 200},
                     bar: {offsetHeight: 100},
                     thumb: {offsetHeight: 0},
                 })
@@ -58,7 +58,7 @@ describe(`Class CustomScroll.`, function() {
         it(`should remove visible class from root element`, function() {
             this.driver
                 .when.domMutated()
-                .given.node('shifted', {scrollHeight: 100})
+                .given.node('content', {offsetHeight: 100})
                 .when.domMutated();
 
             expect(this.driver.nodes.el.classList.contains('visible')).toBe(false);
@@ -66,6 +66,7 @@ describe(`Class CustomScroll.`, function() {
 
         it(`should move thumb on scroll`, function() {
             this.driver
+                .when.domMutated()
                 .when.scrolled(100);
             
             expect(this.driver.nodes.thumb.offsetTop).toBe(50);
@@ -73,6 +74,16 @@ describe(`Class CustomScroll.`, function() {
 
         it(`should scroll when 'thumb' is dragging`, function() {
 
+        });
+        
+        it(`should run 'update' only if content height was changed`, function() {
+            spyOn(this.driver.customScroll, 'update');
+
+            this.driver
+                .when.domMutated()
+                .when.domMutated();
+
+            expect(this.driver.customScroll.update.calls.count()).toBe(1);
         });
     });
 
@@ -83,8 +94,8 @@ describe(`Class CustomScroll.`, function() {
             this.driver
                 .given.nodes({
                     el: {offsetHeight: 100},
-                    shifted: {offsetHeight: 100, scrollHeight: 200, scrollTop: 0},
-                    content: {},
+                    shifted: {offsetHeight: 100, scrollHeight: 100, scrollTop: 0},
+                    content: {offsetHeight: 200},
                     bar: {},
                     thumb: {offsetHeight: 0},
                 })
@@ -115,7 +126,9 @@ describe(`Class CustomScroll.`, function() {
 
             this.driver.customScroll.addListener('scroll', scrollListener);
 
-            this.driver.when.scrolled();
+            this.driver
+                .when.domMutated()
+                .when.scrolled();
 
             expect(scrollListener).toHaveBeenCalledWith({
                 offsetHeight: 100,

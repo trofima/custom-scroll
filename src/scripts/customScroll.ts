@@ -53,6 +53,15 @@ export class CustomScroll {
             this.listeners[type].push(listener);
     }
 
+    update() {
+        this.fixMarginRight();
+
+        if (this.nodes.shifted.scrollHeight > this.nodes.el.offsetHeight)
+            this.show();
+        else
+            this.hide();
+    }
+
     private nodes = {
         el: null,
         shifted: null,
@@ -67,10 +76,8 @@ export class CustomScroll {
     };
 
     private listeners = {};
-
-    private thumb = {
-        y: 0,
-    };
+    private thumbY = 0;
+    private contentHeight = 0;
 
     private setNodes(el) {
         this.nodes.el = el;
@@ -81,7 +88,7 @@ export class CustomScroll {
     }
 
     private observeDOMMutation(DOMObserver) {
-        let domObserver = new DOMObserver(() => this.update());
+        let domObserver = new DOMObserver(() => this.processDOMMutation());
 
         domObserver.observe(this.nodes.content, {
             childList: true,
@@ -89,16 +96,16 @@ export class CustomScroll {
             subtree: true,
         });
     }
-
-    private update() {
-        this.fixMarginRight();
-        
-        if (this.nodes.shifted.scrollHeight > this.nodes.el.offsetHeight)
-            this.show();
-        else
-            this.hide();
-    }
     
+    private processDOMMutation() {
+        let currentContentHeight = this.nodes.content.offsetHeight;
+
+        if (this.contentHeight !== currentContentHeight) {
+            this.contentHeight = currentContentHeight;
+            this.update();
+        }
+    }
+
     private fixMarginRight() {
         let shifted = this.nodes.shifted;
         let scrollBarWidth = shifted.offsetWidth - shifted.clientWidth;
@@ -151,7 +158,7 @@ export class CustomScroll {
 
     private startThumbDragging(e) {
         this.nodes.el.classList.add('thumb-drugging');
-        this.thumb.y = e.screenY;
+        this.thumbY = e.screenY;
         this.addDocumentEventListener('mousemove', (e) => this.dragThumb(e));
         this.addDocumentEventListener('mouseup', (e) => this.finishThumbDragging(e));
         e.preventDefault();
@@ -167,10 +174,10 @@ export class CustomScroll {
     }
 
     private dragThumb(e) {
-        let deltaY = (e.screenY - this.thumb.y)
+        let deltaY = (e.screenY - this.thumbY)
             * this.nodes.shifted.scrollHeight / this.nodes.bar.offsetHeight;
 
-        this.thumb.y = e.screenY;
+        this.thumbY = e.screenY;
         this.nodes.shifted.scrollTop += deltaY;
         e.preventDefault();
     }
