@@ -49,13 +49,13 @@ describe(`Class CustomScroll.`, function() {
             expect(this.driver.nodes.thumb.offsetHeight).toBe(50);
         });
 
-        it(`should add visible class to root element`, function() {
+        it(`should add visible class to the root element`, function() {
             this.driver.when.domMutated();
 
             expect(this.driver.nodes.el.classList.contains('visible')).toBe(true);
         });
 
-        it(`should remove visible class from root element`, function() {
+        it(`should remove visible class from the root element`, function() {
             this.driver
                 .when.domMutated()
                 .given.node('content', {offsetHeight: 100})
@@ -73,9 +73,36 @@ describe(`Class CustomScroll.`, function() {
         });
 
         it(`should scroll when 'thumb' is dragging`, function() {
+            this.driver
+                .when.domMutated()
+                .when.thumbDragged(50);
+
+            expect(this.driver.nodes.shifted.scrollTop).toBe(100);
+        });
+
+        it(`should add class 'thumb-dragging' to the root element`, function() {
+            this.driver
+                .when.domMutated()
+                .when.thumbDragged(50);
+
+            expect(this.driver.nodes.el.classList.contains('thumb-dragging'))
+                .toBe(true);
+        });
+
+        it(`should 'thumb-dragging' class from the root element 
+        after thumb is dropped`, function() {
 
         });
-        
+
+        it(`should remove event listeners from the document 
+        after thumb is dropped`, function() {
+
+        });
+
+        it(`should prevent default actions for DOM move listeners`, function() {
+
+        });
+
         it(`should run 'update' only if content height was changed`, function() {
             spyOn(this.driver.customScroll, 'update');
 

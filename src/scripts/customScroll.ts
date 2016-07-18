@@ -36,11 +36,11 @@ export class CustomScroll {
 
     constructor(
         element:HTMLElement,
-        // documentEl:Document,
+        documentEl,//:Document,
         DOMObserver//:MutationObserverClass
     ) {
         CustomScroll.supportedEventTypes.forEach((type) => this.listeners[type] = []);
-        // this.document.el = documentEl;
+        this.document.el = documentEl;
         this.setNodes(element);
         this.observeDOMMutation(DOMObserver);
         this.addEventListeners();
@@ -135,8 +135,8 @@ export class CustomScroll {
             this.invokeListenersFor('scroll');
         });
 
-        // this.nodes
-        //     .thumb.addEventListener('mousedown', (e) => this.startThumbDragging(e));
+        this.nodes
+            .thumb.addEventListener('mousedown', (e) => this.startThumbDragging(e));
     }
 
     private moveThumb() {
@@ -161,7 +161,7 @@ export class CustomScroll {
         this.thumbY = e.screenY;
         this.addDocumentEventListener('mousemove', (e) => this.dragThumb(e));
         this.addDocumentEventListener('mouseup', (e) => this.finishThumbDragging(e));
-        e.preventDefault();
+        // e.preventDefault();
     }
 
     private addDocumentEventListener(name, callback) {
@@ -177,20 +177,19 @@ export class CustomScroll {
         let deltaY = (e.screenY - this.thumbY)
             * this.nodes.shifted.scrollHeight / this.nodes.bar.offsetHeight;
 
-        this.thumbY = e.screenY;
         this.nodes.shifted.scrollTop += deltaY;
-        e.preventDefault();
+        // e.preventDefault();
     }
 
     private finishThumbDragging(e) {
-        this.nodes.el.classList.remove('thumb-drugging');
-
-        this.document.listeners.forEach(
-            (listener) =>
-                this.document
-                    .el.removeEventListener(listener.name, listener.callback)
-        );
-
-        e.preventDefault();
+        // this.nodes.el.classList.remove('thumb-drugging');
+        //
+        // this.document.listeners.forEach(
+        //     (listener) =>
+        //         this.document
+        //             .el.removeEventListener(listener.name, listener.callback)
+        // );
+        //
+        // e.preventDefault();
     }
 }

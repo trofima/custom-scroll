@@ -12,8 +12,13 @@ class ElementCoreMock {
         this.listeners[name] = callback;
     }
 
+    removeEventListener (name, callback) {
+        if (callback === this.listeners[name])
+            delete this.listeners[name];
+    }
+
     dispatchEvent(e) {
-        this.listeners[e.type]();
+        this.listeners[e.type](e);
     }
 
     classList = {
@@ -93,8 +98,16 @@ export class DOMObserverMock {
     }
 }
 
-export class EventMock {
-    constructor(type) {
-        return {type: type};
+export class DocumentMock extends ElementCoreMock {
+    constructor() {
+        super();
     }
+}
+
+export class EventMock {
+    constructor(type, props = {}) {
+        return (<any>Object).assign({type: type}, props);
+    }
+
+    preventDefault() {}
 }

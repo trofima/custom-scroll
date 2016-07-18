@@ -1,7 +1,7 @@
 'use strict';
 
 import {CustomScroll} from './../src/scripts/customScroll';
-import {DOMObserverMock, ElementMock, EventMock} from './mocks';
+import {DOMObserverMock, ElementMock, EventMock, DocumentMock} from './mocks';
 
 export class CustomScrollDriver {
     customScroll;
@@ -9,7 +9,8 @@ export class CustomScrollDriver {
     constructor() {}
 
     modules = {
-        DOMObserver: DOMObserverMock
+        DOMObserver: DOMObserverMock,
+        document: new DocumentMock,
     };
 
     nodes = {
@@ -54,7 +55,7 @@ export class CustomScrollDriver {
         instantiated: () => {
             this.customScroll = new CustomScroll(
                 this.nodes.el,
-                // DocumentMock,
+                this.modules.document,
                 this.modules.DOMObserver
             );
 
@@ -71,6 +72,14 @@ export class CustomScrollDriver {
         scrolled: (distance = 0) => {
             this.nodes.shifted.scrollTop += distance;
             this.nodes.shifted.dispatchEvent(new EventMock('scroll'));
-        }
+        },
+
+        thumbDragged: (by = 0) => {
+            this.nodes.thumb.dispatchEvent(new EventMock('mousedown', {screenY: 0}));
+
+            this.modules.document.dispatchEvent(new EventMock('mousemove', {
+                screenY: by
+            }));
+        },
     };
 }
