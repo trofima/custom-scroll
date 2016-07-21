@@ -5,7 +5,8 @@ const ts = require('gulp-typescript');
 const sass = require('gulp-sass');
 const concat = require('gulp-concat');
 const concatCss = require('gulp-concat-css');
-const uglify = require('gulp-uglify');
+const uglify = require('uglify-js-harmony');
+const minifer = require('gulp-uglify/minifier');
 const uglifyCss = require('gulp-uglifycss');
 const jasmine = require('gulp-jasmine');
 
@@ -35,7 +36,7 @@ function minJs() {
     return gulp.src('./compiled/src/**/*.js')
         .pipe(concat('bundle.min.js')
             .on('error', throwPluginError))
-        .pipe(uglify()
+        .pipe(minifer({}, uglify)
             .on('error', throwPluginError))
         .pipe(gulp.dest('./dist/'));
 }
