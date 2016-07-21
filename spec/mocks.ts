@@ -9,16 +9,21 @@ class ElementCoreMock {
     constructor() {}
 
     addEventListener (name, callback) {
-        this.listeners[name] = callback;
+        if (!this.listeners[name])
+            this.listeners[name] = [];
+
+        this.listeners[name].push(callback);
     }
 
     removeEventListener (name, callback) {
-        if (callback === this.listeners[name])
-            delete this.listeners[name];
+        let callbackIndex = this.listeners[name].indexOf(callback);
+
+        if (callbackIndex > -1)
+            this.listeners[name].splice(callbackIndex, 1);
     }
 
     dispatchEvent(e) {
-        this.listeners[e.type](e);
+        this.listeners[e.type].forEach((listener) => listener(e));
     }
 
     classList = {
@@ -106,8 +111,6 @@ export class DocumentMock extends ElementCoreMock {
 
 export class EventMock {
     constructor(type, props = {}) {
-        return (<any>Object).assign({type: type}, props);
+        return Object.assign(this, {type: type}, props);
     }
-
-    preventDefault() {}
 }

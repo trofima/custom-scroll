@@ -72,14 +72,32 @@ export class CustomScrollDriver {
         scrolled: (distance = 0) => {
             this.nodes.shifted.scrollTop += distance;
             this.nodes.shifted.dispatchEvent(new EventMock('scroll'));
+
+            return this;
         },
 
-        thumbDragged: (by = 0) => {
+        thumbDragged: (to = 0) => {
             this.nodes.thumb.dispatchEvent(new EventMock('mousedown', {screenY: 0}));
 
             this.modules.document.dispatchEvent(new EventMock('mousemove', {
-                screenY: by
+                screenY: to
             }));
+
+            return this;
+        },
+
+        thumbDropped: () => {
+            this.modules.document.dispatchEvent(new EventMock('mouseup', {}));
+
+            return this;
+        },
+
+        mouseMoved: (to = 0) => {
+            this.modules.document.dispatchEvent(new EventMock('mousemove', {
+                screenY: to
+            }));
+
+            return this;
         },
     };
 }

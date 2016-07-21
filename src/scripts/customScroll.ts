@@ -96,7 +96,7 @@ export class CustomScroll {
             subtree: true,
         });
     }
-    
+
     private processDOMMutation() {
         let currentContentHeight = this.nodes.content.offsetHeight;
 
@@ -157,7 +157,7 @@ export class CustomScroll {
     }
 
     private startThumbDragging(e) {
-        this.nodes.el.classList.add('thumb-drugging');
+        this.nodes.el.classList.add('thumb-dragging');
         this.thumbY = e.screenY;
         this.addDocumentEventListener('mousemove', (e) => this.dragThumb(e));
         this.addDocumentEventListener('mouseup', (e) => this.finishThumbDragging(e));
@@ -182,14 +182,14 @@ export class CustomScroll {
     }
 
     private finishThumbDragging(e) {
-        // this.nodes.el.classList.remove('thumb-drugging');
-        //
-        // this.document.listeners.forEach(
-        //     (listener) =>
-        //         this.document
-        //             .el.removeEventListener(listener.name, listener.callback)
-        // );
-        //
+        this.nodes.el.classList.remove('thumb-dragging');
+
+        this.document.listeners.forEach(
+            (listener) =>
+                this.document
+                    .el.removeEventListener(listener.name, listener.callback)
+        );
+
         // e.preventDefault();
     }
 }

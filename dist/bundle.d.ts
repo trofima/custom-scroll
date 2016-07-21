@@ -1,15 +1,18 @@
 export declare class CustomScroll {
     static supportedEventTypes: string[];
     static checkEvent(type: any): void;
-    constructor(element: HTMLElement, DOMObserver: any);
+    constructor(element: HTMLElement, documentEl: any, DOMObserver: any);
     addListener(type: string, listener: Function): void;
+    update(): void;
     private nodes;
     private document;
     private listeners;
-    private thumb;
+    private thumbY;
+    private contentHeight;
     private setNodes(el);
     private observeDOMMutation(DOMObserver);
-    private update();
+    private processDOMMutation();
+    private fixMarginRight();
     private hide();
     private show();
     private addEventListeners();

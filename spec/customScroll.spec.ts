@@ -89,14 +89,26 @@ describe(`Class CustomScroll.`, function() {
                 .toBe(true);
         });
 
-        it(`should 'thumb-dragging' class from the root element 
+        it(`should remove class 'thumb-dragging' from the root element 
         after thumb is dropped`, function() {
+            this.driver
+                .when.domMutated()
+                .when.thumbDragged(50)
+                .when.thumbDropped();
 
+            expect(this.driver.nodes.el.classList.contains('thumb-dragging'))
+                .toBe(false);
         });
 
         it(`should remove event listeners from the document 
         after thumb is dropped`, function() {
+            this.driver
+                .when.domMutated()
+                .when.thumbDragged(50)
+                .when.thumbDropped()
+                .when.mouseMoved(100);
 
+            expect(this.driver.nodes.shifted.scrollTop).toBe(100);
         });
 
         it(`should prevent default actions for DOM move listeners`, function() {
