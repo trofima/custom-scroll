@@ -11,7 +11,10 @@ const uglifyCss = require('gulp-uglifycss');
 const jasmine = require('gulp-jasmine');
 
 function throwPluginError(err) {
-    console.error('ERROR:\nplugin %s has thrown an error: %s', err.plugin, err.message);
+    console.error(
+        'ERROR:\nplugin %s has thrown an error: %s\nCall stack:\n%s',
+        err.plugin, err.message, err.stack
+    );
 
     return process.exit(1);
 }
